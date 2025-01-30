@@ -1,10 +1,11 @@
+# Define source and destination directories
 $sourceDirectory = "C:\Users\<user>\<path 1>"
 $destinationRoot = "C:\Users\<user>\<path 2>"
 
 # Define file categories and extensions
 $categories = @{
     "SourceCode" = @{
-        "SourceCodeAndConfig" = @(".aidl", ".class", ".cshtml", ".csproj", ".cs", ".js", ".mjs", ".py", ".ps1xml", ".psd1", ".psm1", ".xaml", ".gitconfig", ".eslintrc", ".editorconfig", ".eslintignore", ".prettierignore", ".jshintrc", ".npmignore", ".nupkg", ".nuspec", ".dotnetFirstUseSentinel", ".dotnetUserLevelCache", ".h", ".cpp", ".java", ".ts", ".rb", ".go", ".sh", ".bash")
+        "SourceCodeAndConfig" = @(".aidl", ".class", ".cshtml", ".csproj", ".cs", ".js", ".mjs", ".py", ".ps1xml", ".psd1", ".psm1", ".xaml", ".gitconfig", ".eslintrc", ".editorconfig", ".eslintignore", ".prettierrc")
         "WebFiles" = @(".html", ".css", ".js", ".scss", ".sass", ".vue", ".jsx", ".cssmap", ".php", ".asp", ".xhtml", ".yaml", ".yml", ".twig", ".handlebars")
     }
     "BinaryFiles" = @{
@@ -21,13 +22,13 @@ $categories = @{
         "Images" = @(".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".ico", ".webp", ".raw", ".jpe", ".jfif", ".heic", ".xcf", ".svg", ".ai", ".psd", ".eps")
         "Video" = @(".3gp", ".mp4", ".avi", ".mkv", ".mov", ".wmv", ".webm", ".m4v", ".ts", ".flv", ".mpeg", ".mpg", ".swf", ".vob", ".ogv")
     }
-    "DocumentFiles" = @(".docx", ".xlsx", ".pptx", ".ppt", ".pages", ".txt", ".rtf", ".xml", ".json", ".gdoc", ".gform", ".gsheet", ".gsite", ".pdf", ".odt", ".ods", ".odp", ".csv", ".md", ".tex", ".log", ".epub", ".azw3")
-    "SystemAndConfigurationFiles" = @(".cfg", ".conf", ".properties", ".system", ".plist", ".env", ".lock", ".metadata", ".manifest", ".schema", ".ruleset", ".security", ".sys", ".ini", ".inf", ".iso", ".vhd", ".dmg", ".drv", ".gadget", ".reg", ".desktop", ".bash_profile", ".bashrc", ".zshrc", ".vimrc", ".tmux.conf")
+    "DocumentFiles" = @(".docx", ".xlsx", ".pptx", ".ppt", ".pages", ".txt", ".rtf", ".xml", ".json", ".gdoc", ".gform", ".gsheet", ".gsite", ".pdf", ".odt", ".ods", ".odp", ".csv", ".md", ".tex", ".latex")
+    "SystemAndConfigurationFiles" = @(".cfg", ".conf", ".properties", ".system", ".plist", ".env", ".lock", ".metadata", ".manifest", ".schema", ".ruleset", ".security", ".sys", ".ini", ".inf", ".iso")
     "DataFiles" = @(".csv", ".json", ".xml", ".sqlite", ".sqlite3", ".data", ".bin", ".proto", ".mdb", ".dat", ".log", ".mdf", ".ndjson", ".parquet", ".h5", ".avro")
     "FontFiles" = @(".ttf", ".otf", ".woff", ".woff2", ".eot", ".fon", ".fnt", ".ttc", ".otc")
     "VirtualMachineContainerFiles" = @(".qcow2", ".img", ".vmdk", ".vhd", ".vdi", ".raw")
     "SecurityFiles" = @(".pem", ".pfx", ".p12", ".key", ".crt", ".cer", ".p7s", ".asc", ".csr", ".jks", ".der", ".p8", ".pkcs12", ".pkcs7", ".crt", ".cert")
-    "Miscellaneous" = @(".pdb", ".gitattributes", ".gitignore", ".gitkeep", ".searchconnector-ms", ".nuget", ".wslconfig", ".xsd", ".yml", ".yaml", ".nupkg", ".bundle", ".plugin", ".hpi", ".jar", ".xpi", ".crx", ".tar.xz", ".pkg.tar.xz", ".apk")
+    "Miscellaneous" = @(".pdb", ".gitattributes", ".gitignore", ".gitkeep", ".searchconnector-ms", ".nuget", ".wslconfig", ".xsd", ".yml", ".yaml", ".nupkg", ".bundle", ".plugin", ".hpi", ".jar", ".xpi")
     "CADFiles" = @(".dwg", ".dxf", ".iges", ".stl", ".step", ".fbx", ".obj", ".3ds", ".blend", ".dae", ".x_t")
     "PresentationFiles" = @(".pptx", ".key", ".odp", ".revealjs", ".prezi")
     "SpreadsheetFiles" = @(".csv", ".xls", ".xlsx", ".ods", ".tsv", ".xlsm")
@@ -46,7 +47,7 @@ $categories = @{
     "DiskPartitionFiles" = @(".vhd", ".vhdx", ".gpt", ".mbr", ".iso")
 }
 
-# Create directories for each category and subcategory
+# Function to create directories for each category and subcategory
 function Create-CategoryDirs {
     param (
         [string]$baseDir,
@@ -77,7 +78,7 @@ function Create-CategoryDirs {
     }
 }
 
-# Move files to the appropriate categories based on extensions
+# Function to move files to the appropriate categories based on extensions
 function Move-FilesToCategories {
     param (
         [string]$sourceDir,
@@ -131,7 +132,7 @@ function Move-FilesToCategories {
     }
 }
 
-# Delete empty folders
+# Function to delete empty folders
 function Delete-EmptyFolders {
     param (
         [string]$directory
@@ -145,7 +146,7 @@ function Delete-EmptyFolders {
     }
 }
 
-# Organize files and clean up empty folders
+# Function to organize files and clean up empty folders
 function Organize-Files {
     param (
         [string]$sourceDir,
@@ -153,20 +154,24 @@ function Organize-Files {
         [Hashtable]$categories
     )
 
-    Create-CategoryDirs -baseDir $destinationRoot -categories $categories
-    Move-FilesToCategories -sourceDir $sourceDir -destinationRoot $destinationRoot -categories $categories
-    Delete-EmptyFolders -directory $sourceDir
-    Delete-EmptyFolders -directory $destinationRoot
-
-    # Repeat until the source directory is empty
-    while ((Get-ChildItem -Path $sourceDir).Count -gt 0) {
-        Write-Host "Source directory is not empty, continuing to move files..."
+    try {
+        Create-CategoryDirs -baseDir $destinationRoot -categories $categories
         Move-FilesToCategories -sourceDir $sourceDir -destinationRoot $destinationRoot -categories $categories
         Delete-EmptyFolders -directory $sourceDir
         Delete-EmptyFolders -directory $destinationRoot
-    }
 
-    Write-Host "Organizing complete. Source directory is empty."
+        # Repeat until the source directory is empty
+        while ((Get-ChildItem -Path $sourceDir).Count -gt 0) {
+            Write-Host "Source directory is not empty, continuing to move files..."
+            Move-FilesToCategories -sourceDir $sourceDir -destinationRoot $destinationRoot -categories $categories
+            Delete-EmptyFolders -directory $sourceDir
+            Delete-EmptyFolders -directory $destinationRoot
+        }
+
+        Write-Host "Organizing complete. Source directory is empty."
+    } catch {
+        Write-Error "An error occurred: $_"
+    }
 }
 
 # Call Organize-Files with source and destination
